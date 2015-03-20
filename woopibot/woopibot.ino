@@ -37,6 +37,8 @@ int defaultRightSpeed = 85;
 byte lastNfcUid[20]; // genoeg bytes voorzien, geen idee of er zulke grote uid's bestaan
 int lastNfcLength = 0;
 
+int endOfCardCounter = 0;
+
 bool firstCardIsJunction = true;
 
 // EN MET BATTERIJEN IN SPELEN, anders is het ook omzeep
@@ -108,8 +110,17 @@ void loop() {
   
   // CHECK EINDE KAARTJE:
   if(scanLineSensors() == B0000 /* 0000 = wit */) {
-    onEndOfCard();
-    return; //break uit loop()
+    endOfCardCounter++;
+    
+    // moet minstens 4 keer na mekaar 0000 gezien hebben voor hij akkoord is met einde van kaart:
+    if(endOfCardCounter == 4) {
+      onEndOfCard();
+      endOfCardCounter = 0;
+      return; //break uit loop()
+    }
+    
+  }else{
+    endOfCardCounter = 0;
   }
   
   
@@ -299,7 +310,7 @@ void onEndOfCard() {
   // klein beetje achteruit rijden zodat hij in het midden van de kaart staat:
   
   startMovingBackward();    
-  delay(280); // natte vinger
+  delay(480); // natte vinger
   stopMoving();
   
   stopRobot = true; //zodat hij ook in de loop() niets meer doet
