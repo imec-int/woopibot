@@ -37,6 +37,8 @@ int defaultRightSpeed = 85;
 byte lastNfcUid[20]; // genoeg bytes voorzien, geen idee of er zulke grote uid's bestaan
 int lastNfcLength = 0;
 
+bool firstCardIsJunction = true;
+
 // EN MET BATTERIJEN IN SPELEN, anders is het ook omzeep
 
 void setup() {
@@ -91,10 +93,17 @@ void loop() {
       }
       
       
-      on4wayJunction();
+      
+      bool findCenter = true;
+      if(firstCardIsJunction)
+        findCenter = false;
+      
+      on4wayJunction(findCenter);
       return; //break uit loop()
     }
   }
+  
+  firstCardIsJunction = false;
 
   
   // CHECK EINDE KAARTJE:
@@ -157,22 +166,26 @@ void followLine() {
   servoR.writeMicroseconds(1500 - vR);
 }
 
-void on4wayJunction() {
+void on4wayJunction(bool findCenter) {
   Serial.println("on4wayJunction");
   
-  // eerst doorrijden tot we de horizontale zwarte lijn zien:
-  while( scanLineSensors() != B1111 ) {
-    startMovingForward();    
-    delay(50);  
-  }
-  stopMoving();
+  if(findCenter) {
   
-  Serial.println("line gezien");
-
-  // nog een klein beetje doorrijden tot we in het midden van het kaartje staan:
-  startMovingForward();    
-  delay(412); // natte vinger
-  stopMoving();
+    // eerst doorrijden tot we de horizontale zwarte lijn zien:
+    while( scanLineSensors() != B1111 ) {
+      startMovingForward();    
+      delay(50);  
+    }
+    stopMoving();
+    
+    Serial.println("line gezien");
+  
+    // nog een klein beetje doorrijden tot we in het midden van het kaartje staan:
+    startMovingForward();    
+    delay(412); // natte vinger
+    stopMoving();
+  
+  }
   
   Serial.println("we zitten int midden");
 
