@@ -27,9 +27,6 @@ void setup()
 // This code repeats indefinitely
 void loop() {
   
-
-//  
-  
   // doe iets als hij een NFC tag ziet:
   if (nfc.tagPresent(10)) {
     Serial.println("Found tag");
@@ -46,28 +43,18 @@ void loop() {
 }
 
 void followLine() {
-  DDRD |= B11110000;                         // Set direction of Arduino pins D4-D7 as OUTPUT
-  PORTD |= B11110000;                        // Set level of Arduino pins D4-D7 to HIGH
-  delayMicroseconds(230);                    // Short delay to allow capacitor charge in QTI module
-  DDRD &= B00001111;                         // Set direction of pins D4-D7 as INPUT
-  PORTD &= B00001111;                        // Set level of pins D4-D7 to LOW
-  delayMicroseconds(230);                    // Short delay
-  int pins = PIND;                           // Get values of pins D0-D7
-  pins >>= 4;                                // Drop off first four bits of the port; keep only pins D4-D7
+  int pins = scanLineSensors();
+  printLineSensors(pins);
   
-  // Display result of D4-D7 pins in Serial Monitor:
-  if (pins < 2) Serial.print(B0);
-  if (pins < 4) Serial.print(B0);
-  if (pins < 8) Serial.print(B0);
-  Serial.println(pins, BIN);
-
-  // Determine how to steer based on state of the four QTI sensors
+  // default waarden = ga gewoon vooruit:
   int vL = followlineSpeed;
   int vR = followlineSpeed;
-  switch(pins) {                              // Compare pins to known line following states
+  
+  // based on line sensors:
+  switch(pins) {
     case B1000:                        
-      vL = -followlineSpeed;                             // -100 to 100 indicate course correction values
-      vR = followlineSpeed;                              // -100: full reverse; 0=stopped; 100=full forward
+      vL = -followlineSpeed;
+      vR = followlineSpeed;
       break;
     case B1100:
       vL = 0;
@@ -104,6 +91,27 @@ void followLine() {
   }
   servoL.writeMicroseconds(1500 + vL);
   servoR.writeMicroseconds(1500 - vR);
+}
+
+int scanLineSensors() {
+  DDRD |= B11110000;                         // Set direction of Arduino pins D4-D7 as OUTPUT
+  PORTD |= B11110000;                        // Set level of Arduino pins D4-D7 to HIGH
+  delayMicroseconds(230);                    // Short delay to allow capacitor charge in QTI module
+  DDRD &= B00001111;                         // Set direction of pins D4-D7 as INPUT
+  PORTD &= B00001111;                        // Set level of pins D4-D7 to LOW
+  delayMicroseconds(230);                    // Short delay
+  int pins = PIND;                           // Get values of pins D0-D7
+  pins >>= 4;                                // Drop off first four bits of the port; keep only pins D4-D7
+  
+  return pins;
+}
+
+void printLineSensors(int pins) {
+  // pad with zeros:
+  if (pins < 2) Serial.print(B0);
+  if (pins < 4) Serial.print(B0);
+  if (pins < 8) Serial.print(B0);
+  Serial.println(pins, BIN);
 }
 
 void turn180() {
