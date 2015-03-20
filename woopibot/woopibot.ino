@@ -17,7 +17,6 @@ NfcAdapter nfc = NfcAdapter(pn532_i2c);
 // pin 13 hangt aan de linker servo
 
 bool stopRobot = false;
-bool ignoreNFC = false;
 
 
 // Define RGB Led:
@@ -33,6 +32,10 @@ Servo servoR;
 // Speeds:
 int defaultLeftSpeed = 97; // nie veranderen, anders is alles omzeep
 int defaultRightSpeed = 85;
+
+// Laatste NFC kaart bijhouden (alsook uuid size, want kan ook verschillend zijn):
+byte lastNfcUid[20]; // genoeg bytes voorzien, geen idee of er zulke grote uid's bestaan
+int lastNfcLength = 0;
 
 // EN MET BATTERIJEN IN SPELEN, anders is het ook omzeep
 
@@ -58,7 +61,6 @@ void loop() {
     if(scanLineSensors() == B1111) {
       Serial.println("reset all");
       stopRobot = false;
-      ignoreNFC = false;
     }
     
     delay(50);
@@ -66,16 +68,32 @@ void loop() {
   }
 
   // CHECK NFC:
-  if (!ignoreNFC && nfc.tagPresent(10)) {
-    Serial.println("Found tag");
-    // NfcTag tag = nfc.read();
-    // tag.print();
+  if (nfc.tagPresent(10)) {
+    NfcTag tag = nfc.read();
+    
     // TODO: hier nog checken welke kaart het precies is, voorlopig veronderstellen we dat het altijd een kruispunt is
     // zie https://github.com/mixbe/NFC-2-BLE-on-RFDuino/blob/master/rfduino-readtag/rfduino-readtag.ino voor code om tagid's te vergelijken
     
-    ignoreNFC = true;
-    on4wayJunction();
-    return; //break uit loop()
+    int uidLength = tag.getUidLength();
+    byte uid[uidLength];
+    tag.getUid(uid, uidLength);
+
+    
+    if( uidLength != lastNfcLength || !isSameCard(uid, lastNfcUid, uidLength) ) {
+      Serial.println("Found NEW NFC card");
+      // tag.print();
+      
+      
+      // store last card:
+      lastNfcLength = uidLength;
+      for(int i=0; i<uidLength; i++) {
+        lastNfcUid[i] = uid[i];
+      }
+      
+      
+      on4wayJunction();
+      return; //break uit loop()
+    }
   }
 
   
@@ -340,6 +358,13 @@ void printLineSensors(int pins) {
   if (pins < 4) Serial.print(B0);
   if (pins < 8) Serial.print(B0);
   Serial.println(pins, BIN);
+}
+
+boolean isSameCard(byte a[], byte b[], int array_size) {
+   for (int i = 0; i < array_size; ++i)
+     if (a[i] != b[i])
+       return(false);
+   return(true);
 }
 
 
