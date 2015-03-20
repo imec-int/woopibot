@@ -33,7 +33,7 @@ Servo servoR;
 int defaultLeftSpeed = 97; // nie veranderen, anders is alles omzeep
 int defaultRightSpeed = 85;
 
-// Laatste NFC kaart bijhouden (alsook uuid size, want kan ook verschillend zijn):
+// Laatste NFC kaart bijhouden (alsook uid size, want kan ook verschillend zijn):
 byte lastNfcUid[20]; // genoeg bytes voorzien, geen idee of er zulke grote uid's bestaan
 int lastNfcLength = 0;
 
