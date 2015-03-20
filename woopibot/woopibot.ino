@@ -8,6 +8,23 @@
 PN532_I2C pn532_i2c(Wire);
 NfcAdapter nfc = NfcAdapter(pn532_i2c);
 
+// Pins:
+// pin 0,1 hangen aan de seriele poort (is intern zo, niet los te koppelen)
+// pin 4,5,6,7 hangen aan de line sensoren
+// pin 10 hangt aan de ultrasone sensor
+// pin 11 hangt aan de servo die de ultrasone sensor vasthoudt
+// pin 12 hangt aan de rechter servo
+// pin 13 hangt aan de linker servo
+
+bool stopRobot = false;
+bool ignoreNFC = false;
+
+
+// Define RGB Led:
+int ledR = 2;
+int ledG = 3;
+int ledB = 8;
+
 // Servo stuff:
 Servo servoL;                                
 Servo servoR;
@@ -34,17 +51,41 @@ void setup() {
 void loop() {
   
   // doe iets als hij een NFC tag ziet:
-  if (nfc.tagPresent(10)) {
+  if (!ignoreNFC && nfc.tagPresent(10)) {
     Serial.println("Found tag");
-    NfcTag tag = nfc.read();
-    tag.print();
+//    NfcTag tag = nfc.read();
+//    tag.print();
 
     // TODO: hier nog checken welke kaart het precies is, voorlopig veronderstellen we dat het altijd een kruispunt is
     // zie https://github.com/mixbe/NFC-2-BLE-on-RFDuino/blob/master/rfduino-readtag/rfduino-readtag.ino voor code om tagid's te vergelijken
+    
+    
+    ignoreNFC = true;
     on4wayJunction();
     
   }else{
-    followLine();
+    if(!stopRobot) {
+    
+    
+      followLine();
+      
+      
+      
+      // kijken of hij aan de rand van een kaartje zit:
+      // B0000 = alles wit
+      if(scanLineSensors() == B0000) {
+        onEndOfCard();
+      }
+    
+    }
+    
+    // terug bewegen als hij terug zwart ziet (opheffen bvb):
+    if(scanLineSensors() == B1111) {
+      stopRobot = false;
+      ignoreNFC = false;
+    }
+
+    
 //    delay(50); // Delay for 50 milliseconds (1/20 second)
     delay(40); // 50 -10 van de nfc timeout
   }
@@ -92,16 +133,14 @@ void followLine() {
       vL = defaultSpeed;
       vR = defaultSpeed;
       break;
-    case B0000: // alles wit                 
-      vL = 0;
-      vR = 0;
-      break;
   }
   servoL.writeMicroseconds(1500 + vL);
   servoR.writeMicroseconds(1500 - vR);
 }
 
 void on4wayJunction() {
+  Serial.println("on4wayJunction");
+  
   // eerst doorrijden tot we de horizontale zwarte lijn zien:
   while( scanLineSensors() != B1111 ) {
     startMovingForward(defaultSpeed);    
@@ -109,10 +148,15 @@ void on4wayJunction() {
   }
   stopMoving();
   
+  Serial.println("line gezien");
+
   // nog een klein beetje doorrijden tot we in het midden van het kaartje staan:
   startMovingForward(defaultSpeed);    
-  delay(50000/defaultSpeed); // = afstand/snelheid = tijd // TODO: afstand nog imperisch te bepalen
+  delay(79000/defaultSpeed); // = afstand/snelheid = tijd // TODO: afstand nog imperisch te bepalen
   stopMoving();
+  
+  Serial.println("we zitten int midden");
+  
   
   // op een kruispunt kan hij dus naar 3 richtingen gaan
   
@@ -120,7 +164,9 @@ void on4wayJunction() {
   
   // maar... hij moet ook een beetje twijfelen. Dwz dat hij een paar richtingen moet aannemen voor hij uiteindelijk 'beslist' een nieuwe richting uit te gaan
   // hoeveel keer hij moet twijfelen wordt random bepaald:
-  int directionsLength = random(2, 6); // == min=2, max=5
+  int directionsLength = random(1, 5); // == min=1, max=3
+   
+//  int directionsLength = 1; // DEBUG: geen twijfelrichingen
   
   // we maken een array met alle 'twijfelrichingen':
   int directions[directionsLength];
@@ -131,19 +177,27 @@ void on4wayJunction() {
     // 0=naar links, 1=rechtdoor, 2=naar rechts:
     int directionNumber = random(0, 3); // == min=0, max=2
     
+    
+//    directionNumber = 0; // DEBUG: vaste richting
+    
     switch(directionNumber) {
       case 0:
-      directions[d] = -90;
+      Serial.print("links ");
+      directions[d] = +90;
       break;
       
       case 1:
+      Serial.print("rechtoor ");
       directions[d] = +0;
       break;
        
       case 2:
-      directions[d] = +90;
+      Serial.print("rechts ");
+      directions[d] = -90;
       break;
     }
+    
+    Serial.println("");
   }
   
   // nu echt die bewegingen maken:
@@ -159,12 +213,26 @@ void on4wayJunction() {
   
   // voila, de laatste waarde van de directions nemen we aan voor zijn uiteindelijke beslissing
   // deze functie eindigt en in de loop() functie zou hij dus moeten verder gaan met followLine()
+  
+  
+  // DEBUG:
+//  fullStop();
 }
 
 void on3wayJunction() {
   
   
   
+}
+
+void onEndOfCard() {
+  // klein beetje achteruit rijden zodat hij in het midden van de kaart staat:
+  
+  startMovingBackward(defaultSpeed);    
+  delay(28000/defaultSpeed); // = afstand/snelheid = tijd 
+  stopMoving();
+  
+  stopRobot = true; //zodat hij ook in de loop() niets meer doet
 }
 
 // driving functions:
@@ -174,9 +242,18 @@ void startMovingForward(int speed) {
   servoR.writeMicroseconds(1500 - speed);
 }
 
+void startMovingBackward(int speed) {
+  startMovingForward(-speed);
+}
+
 void stopMoving() {
   servoL.writeMicroseconds(1500);
   servoR.writeMicroseconds(1500);
+}
+
+void fullStop() {
+  stopMoving();
+  stopRobot = true;
 }
 
 void turnAround() {
@@ -213,6 +290,11 @@ void turnLeft() {
 void turnDegrees(int degrees) {
   // een positief getal is tegen de klok in (duh:p)
   
+  
+  Serial.print("turn ");
+  Serial.print(degrees);
+  Serial.println(" degrees");
+  
   int turnspeed = 50;  // natte vinger
   
   int degreesAbsolute = degrees;
@@ -221,7 +303,8 @@ void turnDegrees(int degrees) {
     turnspeed = -turnspeed;
   }
   
-  int turntime = 1100/90*degreesAbsolute; // natte vinger
+  
+  int turntime = 16*degreesAbsolute; // natte vinger
   
   servoL.writeMicroseconds(1500 - turnspeed);
   servoR.writeMicroseconds(1500 - turnspeed);
