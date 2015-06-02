@@ -26,6 +26,7 @@ Works together with woopibotArduino
 
 - Forwards BLE messages to Serial 
 - Forwards Serial messages to BLE
+- Reads out the current RSSI value and sends it to BLE
 
 ## messages
 Messages are strings that start with a 0x02 byte and end with a 0x03 byte.
