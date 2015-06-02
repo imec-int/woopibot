@@ -6,8 +6,15 @@ int led = 3;
 char bytes[1024];
 int bytesIndex = 0;
 
+float RSSI_alpha = 0.5;
+int RSSI_old = 0;
+bool RSSI_firstRead = true;
+
 void setup() {
   pinMode(led, OUTPUT);
+
+  
+//  RFduinoBLE.txPowerLevel = -20;
   
   RFduinoBLE.deviceName = "woopibot";
   RFduinoBLE.advertisementData = "";
@@ -52,6 +59,19 @@ void RFduinoBLE_onReceive(char *data, int len)
 // returns the dBm signal strength indicated by the receiver
 // received signal strength indication (-0dBm to -127dBm)
 void RFduinoBLE_onRSSI(int rssi) {
+  
+  // uitmiddelen volgens matthias:
+  if(RSSI_firstRead) {
+    RSSI_firstRead = false;
+    RSSI_old = rssi;
+  }else{
+    rssi = RSSI_alpha*RSSI_old + (1-RSSI_alpha)*rssi;
+    RSSI_old = rssi;
+  }
+  
+  
+  
+  
   
   // convert int to string and string to char array:
   String rssiString = String(rssi);
