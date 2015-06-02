@@ -112,8 +112,8 @@ void loop() {
   if(scanLineSensors() == B0000 /* 0000 = wit */) {
     endOfCardCounter++;
     
-    // moet minstens 4 keer na mekaar 0000 gezien hebben voor hij akkoord is met einde van kaart:
-    if(endOfCardCounter == 4) {
+    // moet minstens 3 keer na mekaar 0000 gezien hebben voor hij akkoord is met einde van kaart:
+    if(endOfCardCounter == 3) {
       onEndOfCard();
       endOfCardCounter = 0;
       return; //break uit loop()
