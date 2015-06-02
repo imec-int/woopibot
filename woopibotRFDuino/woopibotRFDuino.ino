@@ -1,17 +1,27 @@
 #include <RFduinoBLE.h>
 
+#include "RunningMedian.h"
+
 int led = 3;
 
 
 char bytes[1024];
 int bytesIndex = 0;
 
-float RSSI_alpha = 0.5;
+// uitmiddelen volgens matthias variablen:
+float RSSI_alpha = 0.2;
 int RSSI_old = 0;
 bool RSSI_firstRead = true;
 
+
+RunningMedian rssiSamples = RunningMedian(20);
+long count = 0;
+
+
 void setup() {
   pinMode(led, OUTPUT);
+  
+  
 
   
 //  RFduinoBLE.txPowerLevel = -20;
@@ -61,20 +71,22 @@ void RFduinoBLE_onReceive(char *data, int len)
 void RFduinoBLE_onRSSI(int rssi) {
   
   // uitmiddelen volgens matthias:
-  if(RSSI_firstRead) {
-    RSSI_firstRead = false;
-    RSSI_old = rssi;
-  }else{
-    rssi = RSSI_alpha*RSSI_old + (1-RSSI_alpha)*rssi;
-    RSSI_old = rssi;
-  }
-  
-  
-  
-  
+//  if(RSSI_firstRead) {
+//    RSSI_firstRead = false;
+//    RSSI_old = rssi;
+//  }else{
+//    rssi = RSSI_alpha*RSSI_old + (1-RSSI_alpha)*rssi;
+//    RSSI_old = rssi;
+//  }
+
+
+  // uitmiddelen over een window van 20 waarden:
+  rssiSamples.add(rssi);
+  int rssiMedian = (int)rssiSamples.getMedian();
+
   
   // convert int to string and string to char array:
-  String rssiString = String(rssi);
+  String rssiString = String(rssiMedian);
   int rssiStringLen = rssiString.length()+1; 
   char rssiCharArray[rssiStringLen];
   rssiString.toCharArray(rssiCharArray, rssiStringLen);
