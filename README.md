@@ -41,6 +41,8 @@ Examples of messages that can be received from the BLE:
 - S1000: line sensor 0 sees black
 - P230: it takes 230 microseconds for the "ping" to return to the "ping sensor"
 - P15900: it takes 15900 microseconds for the "ping" to return to the "ping sensor"
+- R-57: the RSSI value of the BLE device is -57 dB
+
 
 
 
