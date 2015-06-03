@@ -60,7 +60,7 @@ public class BluetoothDeviceScript : MonoBehaviour
 			string[] parts = message.Split (delim);
 
 			for (int i = 0; i < parts.Length; ++i)
-				BluetoothLEHardwareInterface.Log(string.Format ("Part: {0} - {1}", i, parts[i]));
+//				BluetoothLEHardwareInterface.Log(string.Format ("Part: {0} - {1}", i, parts[i]));
 
 			if (message.Length >= deviceInitializedString.Length && message.Substring (0, deviceInitializedString.Length) == deviceInitializedString)
 			{
@@ -184,13 +184,13 @@ public class BluetoothDeviceScript : MonoBehaviour
 			byte[] bytes = System.Convert.FromBase64String(base64Data);
 			if (bytes.Length > 0)
 			{
-				BluetoothLEHardwareInterface.Log("Characteristic Received: " + characteristic);
+//				BluetoothLEHardwareInterface.Log("Characteristic Received: " + characteristic);
 
 				string byteString = "";
 				foreach (byte b in bytes)
 					byteString += string.Format("{0:X2}", b);
 
-				BluetoothLEHardwareInterface.Log(byteString);
+//				BluetoothLEHardwareInterface.Log(byteString);
 
 				if (DidUpdateCharacteristicValueAction != null)
 					DidUpdateCharacteristicValueAction (characteristic, bytes);
