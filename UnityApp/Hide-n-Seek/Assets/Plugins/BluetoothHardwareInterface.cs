@@ -229,7 +229,7 @@ public class BluetoothLEHardwareInterface
 		}
 	}
 	
-	public static void ConnectToPeripheral (string name, Action<string> connectAction, Action<string, string> serviceAction, Action<string, string, string> characteristicAction)
+	public static void ConnectToPeripheral (string name, Action<string> connectAction, Action<string, string> serviceAction, Action<string, string, string> characteristicAction, Action<string> disconnectedAction)
 	{
 		if (!Application.isEditor)
 		{
@@ -238,6 +238,7 @@ public class BluetoothLEHardwareInterface
 				bluetoothDeviceScript.ConnectedPeripheralAction = connectAction;
 				bluetoothDeviceScript.DiscoveredServiceAction = serviceAction;
 				bluetoothDeviceScript.DiscoveredCharacteristicAction = characteristicAction;
+				bluetoothDeviceScript.DisconnectedPeripheralAction = disconnectedAction;
 			}
 
 #if UNITY_IPHONE
