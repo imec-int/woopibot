@@ -6,7 +6,6 @@ using System.Text;
 
 public class BLERobot
 {
-	private BluetoothDeviceScript bluetoothDeviceScript;
 	private string characteristicUUID = "2221";
 
 	public string id;  // in uuid form, eg: 92B314BC-B02E-4926-B8E8-D5B48D69B9A6
@@ -20,9 +19,8 @@ public class BLERobot
 	private bool receivingCommandStarted = false;
 			
 			
-	public BLERobot (BluetoothDeviceScript bluetoothDeviceScript, string name, string id)
+	public BLERobot (string name, string id)
 	{
-		this.bluetoothDeviceScript = bluetoothDeviceScript;
 		this.name = name;
 		this.id = id;
 
@@ -58,17 +56,17 @@ public class BLERobot
 	
 	public void DiscoveredServiceAction(string id, string serviceUUID)
 	{
-		Debug.Log ("BLE - " + this.id + " : discoved service uuid '" + serviceUUID + "'");
+		Debug.Log ("BLE - " + this.id + " : discovered service uuid '" + serviceUUID + "'");
 	}
 	
-	public void DiscoveredCharacteristicAction(string id, string serviceUUID, string characteristicUUID)
+	public void DiscoveredCharacteristicAction(string id, string serviceUUID, string discoveredCharacteristicUUID)
 	{
-		Debug.Log ("BLE - " + this.id + " : discoved characteristic uuid '" + characteristicUUID + "'");
+		Debug.Log ("BLE - " + this.id + " : discovered characteristic uuid '" + characteristicUUID + "'");
 
-		if(characteristicUUID == this.characteristicUUID)
+		if(discoveredCharacteristicUUID == this.characteristicUUID)
 		{
 			Debug.Log ("BLE - " + this.id + " : subscribing to notifications");
-			BluetoothLEHardwareInterface.SubscribeCharacteristic (this.id, serviceUUID, characteristicUUID, DidUpdateNotifiationStateForCharacteristicAction, DidUpdateCharacteristicValueAction);
+			BluetoothLEHardwareInterface.SubscribeCharacteristic (this.id, serviceUUID, discoveredCharacteristicUUID, DidUpdateNotifiationStateForCharacteristicAction, DidUpdateCharacteristicValueAction);
 		
 
 			GameManager.Instance.onRobotConnected(this);
@@ -77,7 +75,7 @@ public class BLERobot
 
 	public void DidUpdateNotifiationStateForCharacteristicAction(string characteristicUUID)
 	{
-		Debug.Log ("BLE - " + this.id + " : DidUpdateNotifiationStateForCharacteristicAction()");
+		Debug.Log ("BLE - " + this.id + " : DidUpdateNotifiationStateForCharacteristicAction()"); // geen idee wanneer da voorkomt
 	}
 	
 	public void DidUpdateCharacteristicValueAction(string characteristicUUID, byte[] data)
@@ -151,7 +149,7 @@ public class BLERobot
 
 			GameManager.Instance.onRSSIUpdate(this, rssi);
 		}
-		catch (FormatException e)
+		catch (FormatException)
 		{
 			Debug.Log("BLE - " + this.id + " : rssi value is no Int32");
 		}

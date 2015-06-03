@@ -10,7 +10,6 @@ using System.Collections.Generic;
 
 public class BLERobotManager : Singleton<BLERobotManager>
 {
-	private BluetoothDeviceScript bluetoothDeviceScript;
 	string allowedName = "woopibot";
 	string serviceUUID = "2220";
 
@@ -21,7 +20,7 @@ public class BLERobotManager : Singleton<BLERobotManager>
 	public void StartBLE() // aangeroepen van SetupSceneScript
 	{
 		Debug.Log("BLE: initalizing");
-		bluetoothDeviceScript = BluetoothLEHardwareInterface.Initialize (true, false, InitializedAction, ErrorAction);
+		BluetoothLEHardwareInterface.Initialize (true, false, InitializedAction, ErrorAction);
 	}
 
 	// Callbacks (Actions/Delegates):
@@ -50,7 +49,7 @@ public class BLERobotManager : Singleton<BLERobotManager>
 		if(name != allowedName) Debug.Log("BLE - " + identifier + " : not connecting");
 
 		// maak een nieuw robot objectje aan:
-		BLERobot robot = new BLERobot (bluetoothDeviceScript, name, identifier);
+		BLERobot robot = new BLERobot (name, identifier);
 
 		// connect en doe verder met BLE stuff in het objectje:
 		robot.Connect ();
