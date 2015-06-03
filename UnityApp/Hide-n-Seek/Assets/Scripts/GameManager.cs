@@ -10,7 +10,9 @@ public class GameManager : Singleton<GameManager>
 	//FIELDS
 	Image scanner;
 	
-	public event Action<string, int> OnCardScanned; 
+	private int distanceBlockCount = 0;
+	private int distanceBlock = -1;
+	private int tresholdDistanceBlockCount = 60;
 	
 	//PROPERTIES
 
@@ -49,24 +51,67 @@ public class GameManager : Singleton<GameManager>
 
 
 		if (rssi <= -80) {
-			scanner.sprite = Resources.Load<Sprite>("Sprites/dist_5");
+			registerDistanceBlock(5);
 		}
 
-		if (-80 < rssi && rssi <= -70) {
-			scanner.sprite = Resources.Load<Sprite>("Sprites/dist_4");
+		if (-80 < rssi && rssi <= -65) {
+			registerDistanceBlock(4);
+
 		}
 
-		if (-70 < rssi && rssi <= -65) {
-			scanner.sprite = Resources.Load<Sprite>("Sprites/dist_3");
+		if (-65 < rssi && rssi <= -57) {
+			registerDistanceBlock(3);
+
 		}
 
-		if (-65 < rssi && rssi <= -60) {
-			scanner.sprite = Resources.Load<Sprite>("Sprites/dist_2");
+		if (-57 < rssi && rssi <= -50) {
+			registerDistanceBlock(2);
+
 		}
 
-		if (-60 < rssi) {
-			scanner.sprite = Resources.Load<Sprite>("Sprites/dist_1");
+		if (-50 < rssi) {
+			registerDistanceBlock(1);
+
 		}
+	}
+
+	public void registerDistanceBlock(int block)
+	{
+		if(distanceBlock == block){
+			distanceBlockCount++;
+		}else{
+			distanceBlock = block;
+			distanceBlockCount = 0;
+		}
+
+		// checken of we genoeg keer een afstand in die block geregistreerd hebben
+		if (distanceBlockCount >= tresholdDistanceBlockCount) {
+
+			switch(distanceBlock){
+			case 5:
+				scanner.sprite = Resources.Load<Sprite>("Sprites/dist_5");
+				break;
+
+			case 4:
+				scanner.sprite = Resources.Load<Sprite>("Sprites/dist_4");
+				break;
+
+			case 3:
+				scanner.sprite = Resources.Load<Sprite>("Sprites/dist_3");
+				break;
+
+			case 2:
+				scanner.sprite = Resources.Load<Sprite>("Sprites/dist_2");
+				break;
+
+			case 1:
+				scanner.sprite = Resources.Load<Sprite>("Sprites/dist_1");
+				break;
+			}
+
+		}
+
+
 	}
 
 }
