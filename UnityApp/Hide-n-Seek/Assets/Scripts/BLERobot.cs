@@ -47,6 +47,8 @@ public class BLERobot
 
 		Debug.Log ("BLE - " + this.id + " : disconnected!");
 
+		GameManager.Instance.onRobotDisconnected (this);
+
 		// doorgeven aan de robotmanager dat we gedisconnect zijn
 		BLERobotManager.Instance.robotDisconnected (this);
 
