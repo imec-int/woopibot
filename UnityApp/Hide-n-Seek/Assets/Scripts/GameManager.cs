@@ -12,7 +12,9 @@ public class GameManager : Singleton<GameManager>
 	
 	private int distanceBlockCount = 0;
 	private int distanceBlock = -1;
-	private int tresholdDistanceBlockCount = 60;
+	private int tresholdDistanceBlockCount = 45;
+
+	private int count=0; // gewoon om een verschil te zien in de debugger
 	
 	//PROPERTIES
 
@@ -43,7 +45,7 @@ public class GameManager : Singleton<GameManager>
 	
 	public void onRSSIUpdate(BLERobot robot, int rssi)
 	{
-		Debug.Log ("onRSSIUpdate("+robot.id+","+rssi+")");
+		Debug.Log (count++ + " rssi: " +rssi);
 
 
 		if (!scanner)
@@ -59,17 +61,17 @@ public class GameManager : Singleton<GameManager>
 
 		}
 
-		if (-65 < rssi && rssi <= -57) {
+		if (-65 < rssi && rssi <= -61) {
 			registerDistanceBlock(3);
 
 		}
 
-		if (-57 < rssi && rssi <= -50) {
+		if (-61 < rssi && rssi <= -56) {
 			registerDistanceBlock(2);
 
 		}
 
-		if (-50 < rssi) {
+		if (-56 < rssi) {
 			registerDistanceBlock(1);
 
 		}
@@ -85,7 +87,7 @@ public class GameManager : Singleton<GameManager>
 		}
 
 		// checken of we genoeg keer een afstand in die block geregistreerd hebben
-		if (distanceBlockCount >= tresholdDistanceBlockCount) {
+		if(distanceBlockCount >= tresholdDistanceBlockCount) {
 
 			switch(distanceBlock){
 			case 5:

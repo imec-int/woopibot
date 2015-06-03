@@ -108,7 +108,7 @@ public class BLERobot
 
 	public void parseCommand(byte[] command) {
 		string commandString = Encoding.UTF8.GetString(command, 0, command.Length);
-		Debug.Log("BLE - " + this.id + " : incomming command " + commandString);
+//		Debug.Log("BLE - " + this.id + " : incomming command " + commandString);
 
 		string commandWithoutFirstLetter = commandString.Substring (1);
 		string firstLetter = commandString.Substring (0, 1);
@@ -147,7 +147,7 @@ public class BLERobot
 			
 			float normalizedRssi = ((float)rssi + 255) / 255;
 			
-			Debug.Log("BLE - " + this.id + " : incomming rssi: " + rssi + "| normalized value: " + normalizedRssi);
+//			Debug.Log("BLE - " + this.id + " : incomming rssi: " + rssi + "| normalized value: " + normalizedRssi);
 
 			GameManager.Instance.onRSSIUpdate(this, rssi);
 		}
