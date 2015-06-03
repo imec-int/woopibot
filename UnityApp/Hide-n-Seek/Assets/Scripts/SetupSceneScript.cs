@@ -12,26 +12,7 @@ public class SetupSceneScript : MonoBehaviour
 
 	void Start()
 	{
-		int something = 0;
-
-		switch (something)
-		{
-		case 1:
-			scanner.sprite = Resources.Load<Sprite>("Sprites/avatar_big");
-			break;
-		case 2:
-			scanner.sprite = Resources.Load<Sprite>("Sprites/avatar_big2");
-			break;
-		case 3:
-			scanner.sprite = Resources.Load<Sprite>("Sprites/avatar_big3");
-			break;
-		}
-	}
-	
-
-
-	public void proximityValues(string data)
-	{
-		Debug.Log(data);
+		BLERobotManager.Instance.StartBLE ();
+		GameManager.Instance.Init (scanner);
 	}
 }
