@@ -12,7 +12,7 @@ public class GameManager : Singleton<GameManager>
 	
 	private int distanceBlockCount = 0;
 	private int distanceBlock = -1;
-	private int tresholdDistanceBlockCount = 45;
+	private int tresholdDistanceBlockCount = 20;
 
 	private int count=0; // gewoon om een verschil te zien in de debugger
 	
@@ -52,26 +52,26 @@ public class GameManager : Singleton<GameManager>
 			return;
 
 
-		if (rssi <= -80) {
+		if (rssi <= -75) {
 			registerDistanceBlock(5);
 		}
 
-		if (-80 < rssi && rssi <= -65) {
+		if (-70 < rssi && rssi <= -65) {
 			registerDistanceBlock(4);
 
 		}
 
-		if (-65 < rssi && rssi <= -61) {
+		if (-65 < rssi && rssi <= -60) {
 			registerDistanceBlock(3);
 
 		}
 
-		if (-61 < rssi && rssi <= -56) {
+		if (-60 < rssi && rssi <= -54) {
 			registerDistanceBlock(2);
 
 		}
 
-		if (-56 < rssi) {
+		if (-54 < rssi) {
 			registerDistanceBlock(1);
 
 		}
