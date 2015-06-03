@@ -3,7 +3,10 @@
 #include "RunningMedian.h"
 
 int led = 3;
+unsigned long lastRssiTime;
+unsigned long timeSinceLastRssi;
 
+bool isConnected = false;
 
 char bytes[1024];
 int bytesIndex = 0;
@@ -14,7 +17,9 @@ int RSSI_old = 0;
 bool RSSI_firstRead = true;
 
 
-RunningMedian rssiSamples = RunningMedian(20);
+
+
+RunningMedian rssiSamples = RunningMedian(50);
 long count = 0;
 
 
@@ -41,6 +46,14 @@ void loop() {
   readSerial();
   
   RFduino_ULPDelay(SECONDS(0.040));
+  
+  // rssi nog eens zenden als het te lang geleden is dat we hem nog gezonden hebben:
+  timeSinceLastRssi = millis() - lastRssiTime;
+  if(timeSinceLastRssi > 50) {
+    int rssiMedian = (int)rssiSamples.getMedian();
+    sendRssi(rssiMedian);
+    lastRssiTime = millis();
+  }
 }
 
 void readSerial() {
@@ -55,20 +68,30 @@ void readSerial() {
   bytesIndex = 0;
 }
 
+
+void RFduinoBLE_onConnect()
+{
+  digitalWrite(led, HIGH);
+  isConnected = true;
+}
+
 void RFduinoBLE_onDisconnect()
 {
   digitalWrite(led, LOW);
+  isConnected = false;
 }
 
 void RFduinoBLE_onReceive(char *data, int len)
 {
-  digitalWrite(led, HIGH);
   Serial.print(data);
 }
 
 // returns the dBm signal strength indicated by the receiver
 // received signal strength indication (-0dBm to -127dBm)
 void RFduinoBLE_onRSSI(int rssi) {
+  lastRssiTime = millis();
+  
+  if(!isConnected) return;
   
   // uitmiddelen volgens matthias:
 //  if(RSSI_firstRead) {
@@ -80,13 +103,16 @@ void RFduinoBLE_onRSSI(int rssi) {
 //  }
 
 
-  // uitmiddelen over een window van 20 waarden:
+  // uitmiddelen over een window van 50 waarden:
   rssiSamples.add(rssi);
   int rssiMedian = (int)rssiSamples.getMedian();
 
-  
+  sendRssi(rssiMedian);
+}
+
+void sendRssi(int rssi) {
   // convert int to string and string to char array:
-  String rssiString = String(rssiMedian);
+  String rssiString = String(rssi);
   int rssiStringLen = rssiString.length()+1; 
   char rssiCharArray[rssiStringLen];
   rssiString.toCharArray(rssiCharArray, rssiStringLen);
@@ -101,5 +127,5 @@ void RFduinoBLE_onRSSI(int rssi) {
   }
   data[rssiStringLen+1] = 0x03;
   
-  RFduinoBLE.send(data, rssiStringLen+2); 
+  RFduinoBLE.send(data, rssiStringLen+2);  
 }
